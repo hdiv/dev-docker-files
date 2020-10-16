@@ -1,0 +1,39 @@
+#!/bin/bash
+set -euo pipefail
+
+PATH=".ci:$PATH"
+
+syntax=plain
+if [[ "${1:-}" = "--matrix" ]]; then
+    syntax=matrix
+fi
+
+images=()
+for image in * ;do
+    if [[ ! -d "${image}" ]]; then
+        continue
+    fi
+    if ! git-changed "$image" &> /dev/null; then
+        continue
+    fi
+    images+=("$image")
+done
+
+if [[ "$syntax" = plain ]]; then
+    for image in "${images[@]}"; do
+        echo "$image"
+    done
+elif [[ "$syntax" = matrix ]]; then
+    output='{"image":['
+    first=true
+    for image in "${images[@]}"; do
+        if [[ "$first" = true ]]; then
+            first=false
+        else
+            output="$output,"
+        fi
+        output="$output"'"'"$image"'"'
+    done
+    output="$output]}"
+    echo -n "$output"
+fi

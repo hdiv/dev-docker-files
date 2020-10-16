@@ -4,8 +4,9 @@ on:
     branches:
       - master
       - staging
-    pull_requests: {}
+  pull_request: {}
 jobs:
   build:
+    runs-on: ubuntu-latest
     steps:
       - run: echo "hello world"

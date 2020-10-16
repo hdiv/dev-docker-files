@@ -1,0 +1,11 @@
+name: ci
+on:
+  push:
+    branches:
+      - master
+      - staging
+    pull_requests: {}
+jobs:
+  build:
+    steps:
+      - run: echo "hello world"

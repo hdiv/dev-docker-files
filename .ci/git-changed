@@ -1,0 +1,52 @@
+#!/bin/bash
+set -euo pipefail
+
+path="${1:-$(pwd)}"
+old_ref="origin/master"
+new_ref="HEAD"
+
+if [[ "$(git rev-parse "$old_ref")" = "$(git rev-parse "$new_ref")" ]]; then
+    old_ref="HEAD~1"
+fi
+
+excluded_patterns=(
+    '.*/README.md$'
+)
+
+is_excluded() {
+    local path="$1"
+    for excl in "${excluded_patterns[@]}"; do
+        if [[ "${path}" =~ ${excl} ]]; then
+            return 1
+        fi
+    done
+    return 0
+}
+
+filter_excluded() {
+    while read line; do
+        if ! is_excluded "$line"; then
+            echo "$line"
+        fi
+    done
+}
+
+git_changed_files() {
+    local old="$1"
+    local new="$2"
+    local path="$3"
+    git diff --name-only "$old..$new" -- "$path"
+}
+
+mapfile -t changed_files < <(git_changed_files "$old_ref" "$new_ref" "$path" | filter_excluded)
+
+if [[ ${#changed_files[@]} == 0 ]]; then
+    echo "Nothing changed."
+    exit 1
+else
+    echo "Changes:"
+    for file in "${changed_files[@]}"; do
+        echo "  $file"
+    done
+    exit 0
+fi

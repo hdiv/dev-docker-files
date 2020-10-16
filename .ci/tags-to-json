@@ -1,0 +1,23 @@
+#!/bin/bash
+set -euo pipefail
+
+path="$1"
+tags_path="$path/tags"
+
+if [[ ! -f "$tags_path" ]]; then
+    echo "$tags_path does not exist"
+    exit 1
+fi
+
+output='"'
+first=true
+for tag in $(<"$tags_path"); do
+    if [[ "$first" = true ]]; then
+        first=false
+        output="$output$tag"
+    else
+        output="$output\n$tag"
+    fi
+done
+output="$output"'"'
+echo -n "$output"
